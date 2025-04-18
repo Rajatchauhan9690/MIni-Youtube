@@ -37,7 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // return res
 
   const { fullName, email, username, password } = req.body;
-  console.log("req body :", req.body);
+  // console.log("req body :", req.body);
   if (
     [fullName, email, username, password].some(
       (field) => !field || field.trim() === ""
@@ -103,10 +103,6 @@ const loginUser = asyncHandler(async (req, res) => {
   // check for login
   // return res
   const { username, email, password } = req.body;
-  console.log("req body :", req.body);
-
-  console.log("username:", username);
-  console.log("email:", email);
 
   if (!username && !email) {
     throw new ApiError(400, "Please provide username or email");
@@ -249,18 +245,31 @@ const updatedUserAvatar = asyncHandler(async (req, res) => {
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar is required");
   }
+
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-  if (!avatar.url) {
-    throw new ApiError(400, "Error while uploading avatar on cloudniary");
+
+  if (!avatar?.url) {
+    throw new ApiError(400, "Error while uploading avatar on Cloudinary");
   }
+
   const existingUser = await User.findById(req.user?._id);
-  console.log("Existing user's avatarPublicId:", existingUser?.avatarPublicId);
-  if (existingUser?.avatarPublicId) {
-    console.log(
-      "Deleting old avatar with public ID:",
-      existingUser.avatarPublicId
-    );
-    await deleteFromCloudinary(existingUser.avatarPublicId);
+
+  // 🧠 Extract public ID from the existing avatar URL
+  if (existingUser?.avatar) {
+    const avatarUrl = existingUser.avatar;
+
+    // Get only the path after `/upload/`
+    const parts = avatarUrl.split("/upload/");
+    if (parts.length < 2) {
+      console.warn("Invalid Cloudinary URL structure.");
+    } else {
+      const publicUrlPart = parts[1]; // e.g., 'v1744968721/filename.jpg'
+      const publicIdWithExt = publicUrlPart.split("/").slice(1).join("/"); // remove the version
+      const publicId = publicIdWithExt.replace(/\.[^/.]+$/, ""); // remove file extension
+
+      console.log("Extracted public ID:", publicId);
+      await deleteFromCloudinary(publicId);
+    }
   }
 
   const user = await User.findByIdAndUpdate(
@@ -274,13 +283,16 @@ const updatedUserAvatar = asyncHandler(async (req, res) => {
       new: true,
     }
   ).select("-password");
+
   if (!user) {
     throw new ApiError(404, "User not found");
   }
+
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User avatar updated successfully"));
 });
+
 const updatedUserCoverImage = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req.files?.path;
   if (!coverImageLocalPath) {
