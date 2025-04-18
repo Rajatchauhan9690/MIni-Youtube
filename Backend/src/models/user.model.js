@@ -23,6 +23,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+
     coverImage: {
       type: String,
     },

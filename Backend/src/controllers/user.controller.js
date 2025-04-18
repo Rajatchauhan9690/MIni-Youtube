@@ -1,9 +1,14 @@
 import asyncHandler from "../utils/asynchandler.js";
 import ApiError from "../utils/ApiError.js";
 import User from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import validator from "validator";
+import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
   try {
@@ -222,7 +227,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   if (!fullName || !email) {
     throw new ApiError(400, "Please fill all the fields");
   }
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -239,7 +244,8 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "User details updated successfully"));
 });
 const updatedUserAvatar = asyncHandler(async (req, res) => {
-  const avatarLocalPath = req.files?.path;
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
+
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar is required");
   }
@@ -247,6 +253,16 @@ const updatedUserAvatar = asyncHandler(async (req, res) => {
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading avatar on cloudniary");
   }
+  const existingUser = await User.findById(req.user?._id);
+  console.log("Existing user's avatarPublicId:", existingUser?.avatarPublicId);
+  if (existingUser?.avatarPublicId) {
+    console.log(
+      "Deleting old avatar with public ID:",
+      existingUser.avatarPublicId
+    );
+    await deleteFromCloudinary(existingUser.avatarPublicId);
+  }
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
