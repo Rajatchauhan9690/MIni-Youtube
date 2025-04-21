@@ -208,6 +208,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Old password is incorrect");
   }
   user.password = newPassword;
+
   await user.save({ validateBeforeSave: false });
   return res
     .status(200)
@@ -219,8 +220,8 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, "Current User fetched successfully"));
 });
 const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { fullName, email } = req.body;
-  if (!fullName || !email) {
+  const { fullName, email, username } = req.body;
+  if (!fullName && !email && !username) {
     throw new ApiError(400, "Please fill all the fields");
   }
   const user = await User.findByIdAndUpdate(
@@ -229,6 +230,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
       $set: {
         fullName: fullName,
         email: email,
+        username: username.toLowerCase(),
       },
     },
     {
@@ -294,7 +296,7 @@ const updatedUserAvatar = asyncHandler(async (req, res) => {
 });
 
 const updatedUserCoverImage = asyncHandler(async (req, res) => {
-  const coverImageLocalPath = req.files?.path;
+  const coverImageLocalPath = req.files?.coverImage?.[0]?.path || "";
   if (!coverImageLocalPath) {
     throw new ApiError(400, "coverImage is required");
   }
@@ -302,11 +304,28 @@ const updatedUserCoverImage = asyncHandler(async (req, res) => {
   if (!coverImage.url) {
     throw new ApiError(400, "Error while uploading coverImage on cloudniary");
   }
+  const existingUser = await User.findById(req.user?._id);
+  // 🧠 Extract public ID from the existing coverImage URL
+  if (existingUser?.coverImage) {
+    const coverImageUrl = existingUser.coverImage;
+
+    // Get only the path after `/upload/`
+    const parts = coverImageUrl.split("/upload/");
+    if (parts.length < 2) {
+      console.warn("Invalid Cloudinary URL structure.");
+    } else {
+      const publicUrlPart = parts[1]; // e.g., 'v1744968721/filename.jpg'
+      const publicIdWithExt = publicUrlPart.split("/").slice(1).join("/"); // remove the version
+      const publicId = publicIdWithExt.replace(/\.[^/.]+$/, ""); // remove file extension
+
+      await deleteFromCloudinary(publicId);
+    }
+  }
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
-        avatar: coverImage.url,
+        coverImage: coverImage.url,
       },
     },
     {
