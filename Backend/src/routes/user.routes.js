@@ -10,6 +10,7 @@ import {
   changeCurrentPassword,
   getCurrentUser,
 } from "../controllers/user.controller.js";
+import { sendOtp, verifyOtp } from "../controllers/otp.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
@@ -49,4 +50,6 @@ router
     upload.fields([{ name: "coverImage", maxCount: 1 }]),
     updatedUserCoverImage
   );
+router.post("/send-otp", sendOtp);
+router.post("/verify-otp", verifyOtp);
 export default router;
