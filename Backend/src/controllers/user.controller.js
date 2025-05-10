@@ -8,7 +8,6 @@ import {
 import { ApiResponse } from "../utils/ApiResponse.js";
 import validator from "validator";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
   try {
@@ -100,7 +99,6 @@ const registerUser = asyncHandler(async (req, res) => {
       )
     );
 });
-
 const loginUser = asyncHandler(async (req, res) => {
   // req body -> data
   // username or email and password

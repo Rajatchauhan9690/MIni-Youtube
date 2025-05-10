@@ -1,14 +1,14 @@
-// src/pages/Dashboard.jsx
-
-import React from "react";
+import { useParams } from "react-router-dom";
 
 const Dashboard = () => {
+  const { id } = useParams();
+
   return (
     <div>
-      <h1 style={{ color: "black" }}>Welcome to the Dashboard</h1>
+      <h2>Welcome to Dashboard</h2>
+      <p>Your ID is: {id}</p>
     </div>
   );
 };
 
-// Default export
 export default Dashboard;

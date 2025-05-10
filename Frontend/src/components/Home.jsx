@@ -20,7 +20,7 @@ const Home = () => {
       </div>
 
       <div className="home-container">
-        <Link to="/dashboard" className="home-cta-btn">
+        <Link to="/dashboard/:id" className="home-cta-btn">
           Get Started
         </Link>
         <h1>Your One Stop Solution for Education</h1>

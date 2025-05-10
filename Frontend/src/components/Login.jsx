@@ -7,7 +7,6 @@ const login = () => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -30,14 +29,16 @@ const login = () => {
           withCredentials: true,
         }
       );
-      console.log("welcome", res.data);
+
       if (res.data.success) {
-        setSuccessMessage("🎉 Login successful!");
-        navigate("/dashboard");
+        const userId = res.data.data.user._id;
+        console.log("res.data.data", res.data.data);
+        navigate(`/dashboard/${userId}`);
       } else {
         setErrorMessage(res.data.message || "Login failed");
       }
     } catch (error) {
+      console.error("Login error:", error);
       setErrorMessage(
         error.response?.data?.message || "Login failed. Please try again."
       );
@@ -66,7 +67,7 @@ const login = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+
         <button type="submit">Login</button>
       </form>
     </div>
