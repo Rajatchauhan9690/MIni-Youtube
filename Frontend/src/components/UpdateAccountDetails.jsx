@@ -21,7 +21,7 @@ const UpdateAccountDetails = ({ currentUser }) => {
 
     try {
       const res = await axios.post(
-        "/api/v1/users/updateAccountDetails",
+        "/api/v1/updateAccountDetails",
         {
           fullName,
           email,

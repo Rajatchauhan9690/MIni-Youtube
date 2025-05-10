@@ -7,6 +7,7 @@ const login = () => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -19,7 +20,7 @@ const login = () => {
 
     try {
       const res = await axios.post(
-        "/api/v1/users/login",
+        "/api/v1/login",
         {
           email: emailOrUsername,
           username: emailOrUsername,
@@ -29,8 +30,9 @@ const login = () => {
           withCredentials: true,
         }
       );
-
+      console.log("welcome", res.data);
       if (res.data.success) {
+        setSuccessMessage("🎉 Login successful!");
         navigate("/dashboard");
       } else {
         setErrorMessage(res.data.message || "Login failed");
@@ -64,7 +66,7 @@ const login = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-
+        {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
         <button type="submit">Login</button>
       </form>
     </div>

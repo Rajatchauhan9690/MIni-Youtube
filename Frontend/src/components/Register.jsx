@@ -42,7 +42,7 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post("/api/v1/users/register", formData, {
+      const res = await axios.post("/api/v1/register", formData, {
         withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data",
@@ -52,7 +52,7 @@ const Register = () => {
       if (res.data.success) {
         setSuccessMessage("🎉 Registration successful!");
         setTimeout(() => {
-          navigate("/login");
+          navigate("/dashboard");
         }, 2000);
 
         // Optional: clear form
