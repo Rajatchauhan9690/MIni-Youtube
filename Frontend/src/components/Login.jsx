@@ -50,8 +50,6 @@ const login = () => {
       <form onSubmit={handleLogin}>
         <h2>Login</h2>
 
-        {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-
         <input
           type="text"
           placeholder="Email or Username"
@@ -67,7 +65,7 @@ const login = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-
+        {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
         <button type="submit">Login</button>
       </form>
     </div>
